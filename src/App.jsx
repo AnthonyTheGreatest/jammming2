@@ -21,8 +21,11 @@ const App = () => {
     return localValue ? JSON.parse(localValue) : [];
   });
 
+  let playlistUriList = [];
+
   useEffect(() => {
     localStorage.setItem('PLAYLIST_ITEMS', JSON.stringify(playlistItems));
+    playlistItems.forEach(song => playlistUriList.push(song.uri));
   }, [playlistItems]);
 
   const [token, setToken] = useState('');
@@ -53,7 +56,7 @@ const App = () => {
         type: 'track'
       }
     });
-    console.log(data);
+    // console.log(data);
     const result = data.tracks.items.map(item => ({...item}));
     setSearchResults(result);
   };
@@ -83,6 +86,38 @@ const App = () => {
     setPlaylistItems([]);
   }
 
+  const savePlaylist = async name => {
+    const {data: user} = await axios.get('https://api.spotify.com/v1/me', {
+      headers: {
+        Authorization: `Bearer ${token}` 
+      }
+    });
+    const {data: playlist} = await axios.post(
+      `https://api.spotify.com/v1/users/${user.id}/playlists`,
+      {
+        name: name,
+        description: 'A playlist created with the Jammming app.'
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    // 'error: {status: 403, message: 'Insufficient client scope'}'
+    await axios.post(
+      `//v1/users/${user.id}/playlists/${playlist.id}/tr?uris=${playlistUriList.join(',')}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  };
+
   const logout = () => {
     setToken('');
     localStorage.removeItem('TOKEN');
@@ -108,7 +143,8 @@ const App = () => {
                  clearResults={clearResults} />
         <Playlist playlistItems={playlistItems}
                   removeFromPlaylist={removeFromPlaylist}
-                  clearPlaylist={clearPlaylist} />
+                  clearPlaylist={clearPlaylist}
+                  savePlaylist={savePlaylist} />
       </div>
     </div>
   );

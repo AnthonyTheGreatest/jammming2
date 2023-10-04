@@ -1,11 +1,14 @@
 import React from 'react';
 import ResultItem from './ResultItem';
 
-const Results = ({searchResults, addToPlaylist}) => {
+const Results = ({searchResults, addToPlaylist, clearResults}) => {
   return (
     <div>
         <h3>Results</h3>
-        {searchResults.length === 0 && <p>No songs available with that name.</p>}
+        {searchResults.length ? <button onClick={clearResults}
+                                        style={{marginBottom:'1em'}} >Clear Results</button>
+                              : <p>Nothing to show.</p>}
+
         {searchResults.map(song => {
           return (
             <ResultItem {...song}

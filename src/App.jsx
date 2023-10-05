@@ -105,9 +105,8 @@ const App = () => {
         }
       }
     );
-    // 'error: {status: 403, message: 'Insufficient client scope'}'
     await axios.post(
-      `//v1/users/${user.id}/playlists/${playlist.id}/tr?uris=${playlistUriList.join(',')}`,
+      `https://api.spotify.com/v1/playlists/${playlist.id}/tracks?uris=${encodeURIComponent(playlistUriList.join(','))}`,
       {},
       {
         headers: {
@@ -116,6 +115,7 @@ const App = () => {
         }
       }
     );
+    // 404 error
   };
 
   const logout = () => {
@@ -123,16 +123,21 @@ const App = () => {
     localStorage.removeItem('TOKEN');
   };
 
-  const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
   const CLIENT_ID = 'b0899ba81f4e4dc5a6c9bbd0f71ca5b6';
   const REDIRECT_URI = 'http://127.0.0.1:5173/';
   const RESPONSE_TYPE = 'token';
-  const url = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`;
+  const SCOPE = 'playlist-modify-public playlist-modify-private playlist-read-private';
+
+  let loginUrl = 'https://accounts.spotify.com/authorize';
+  loginUrl += '?client_id=' + encodeURIComponent(CLIENT_ID);
+  loginUrl += '&redirect_uri=' + encodeURIComponent(REDIRECT_URI);
+  loginUrl += '&response_type=' + encodeURIComponent(RESPONSE_TYPE);
+  loginUrl += '&scope=' + encodeURIComponent(SCOPE);
 
   return (
     <div>
       { !token ?
-      <a href={url}>Login to Spotify</a>
+      <a href={loginUrl}>Login to Spotify</a>
       : <button onClick={logout} >Logout</button> }
       <div style={{display:'flex', justifyContent:'center', margin:'5em'}}>
         <Form search={search} />
